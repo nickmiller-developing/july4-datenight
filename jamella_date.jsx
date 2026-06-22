@@ -1,0 +1,774 @@
+import { useState, useEffect, useRef } from "react";
+
+// ── data ──────────────────────────────────────────────────────────────────────
+
+const QUESTIONS = [
+  {
+    q: "On a scale of 1–10, how good is Nick's rizz?",
+    sub: "Try not to say 10… level impossible 🤭",
+    type: "scale",
+  },
+  {
+    q: "What's your favourite candy?",
+    type: "text",
+    placeholder: "Don't hold back...",
+  },
+  {
+    q: "What's your favourite chocolate?",
+    type: "text",
+    placeholder: "Be specific lol",
+  },
+  {
+    q: "If we're doing a movie night, what are we watching?",
+    type: "choice",
+    opts: ["Romance — obviously", "Horror (I like fear)", "Comedy, keep it light", "I'll fall asleep either way", "Other (she has taste 👀)"],
+  },
+  {
+    q: "What's your love language for receiving?",
+    type: "choice",
+    opts: ["Words of affirmation", "Quality time", "Acts of service", "Thoughtful gifts"],
+  },
+];
+
+const ACTIVITIES = [
+  {
+    icon: "🧱",
+    name: "Lego",
+    teaser: "What's up suki, what's up bullet 🧱",
+    hype: "",
+    subTitle: "Which set are you picking?",
+    subType: "vote",
+    subOpts: ["Honda S2000 🚗", "Nissan R34 🏎️", "Porsche 911 🏁", "Toyota Supra 🔥", "Other 👀"],
+    bg: "#eef2ff",
+    color: "#4338ca",
+  },
+  {
+    icon: "📸",
+    name: "Photo booth",
+    teaser: "The little arcade booth — pics we're keeping forever.",
+    hype: "Your gonna mog me in the photos 🗿",
+    subTitle: "What's the one pic you definitely want?",
+    subType: "vote",
+    subOpts: ["The cute one 🥰", "The silly one 😂", "The candid laugh", "The cool serious one", "All of the above"],
+    bg: "#fff0f6",
+    color: "#d4537e",
+  },
+  {
+    icon: "🛍️",
+    name: "Thrifting",
+    teaser: "Tuffest fits we're gonna construct 🔥",
+    hype: "Find something fire 🔥",
+    subTitle: "What vibe are we going for?",
+    subType: "vote",
+    subOpts: ["Y2K / retro fits", "Cozy & oversized", "Streetwear finds", "Whatever catches our eye"],
+    bg: "#f0fdf4",
+    color: "#16a34a",
+  },
+  {
+    icon: "🍓",
+    name: "Hwachae",
+    teaser: "EATING HWACHAE WITH MY COUSIN.... 🍓",
+    hype: "So refreshing 🍉",
+    subTitle: "What fruits do you want in it?",
+    subType: "multi",
+    subOpts: ["Strawberry 🍓", "Blueberry 🫐", "Watermelon 🍉", "Pineapple 🍍", "I don't care", "Other"],
+    bg: "#fef9ec",
+    color: "#b45309",
+  },
+  {
+    icon: "🚗",
+    name: "Car rotting",
+    teaser: "Good music, good snacks, good company 🚗",
+    hype: "Best part of any day 🥹",
+    subTitle: "What are we doing in the car?",
+    subType: "vote",
+    subOpts: ["Listen to our playlist 🎵", "😘", "Yap", "All of the above"],
+    bg: "#fff8e6",
+    color: "#92400e",
+  },
+  {
+    icon: "🚶",
+    name: "Walk",
+    teaser: "Walking for no reason 🚶",
+    hype: "Fresh air hits different 🌿",
+    subTitle: "Where are we walking?",
+    subType: "vote",
+    subOpts: ["Walk around a park 🌳", "Walk in the city 🏙️", "Walk around a random neighbourhood 🏘️", "No more walking 😭", "Other"],
+    bg: "#f0fdf4",
+    color: "#15803d",
+  },
+];
+
+const FOOD_OPTS = [
+  { name: "Chipotle", icon: "🌯" },
+  { name: "Shake Shack", icon: "🍔" },
+  { name: "McDonald's", icon: "🍟" },
+  { name: "Tim Hortons", icon: "☕" },
+  { name: "Nick will choose (Best Option)", icon: "👑", best: true },
+  { name: "Other", icon: "🍽️" },
+];
+
+const SHEETDB_URL = "https://sheetdb.io/api/v1/a9xezlb0zpixk";
+
+// ── shared styles ──────────────────────────────────────────────────────────────
+
+const pink = "#d4537e";
+const pinkLight = "#fff0f6";
+const pinkBorder = "#f0d0dc";
+const pinkDark = "#993556";
+const textMain = "#2c2c2a";
+const textMuted = "#888780";
+
+const btnStyle = {
+  background: pink, color: "#fff", border: "none",
+  borderRadius: 14, padding: "0.8rem 2rem",
+  fontSize: 16, fontWeight: 600, cursor: "pointer",
+  transition: "opacity 0.15s",
+  width: "100%",
+};
+
+// ── shared wrapper ─────────────────────────────────────────────────────────────
+
+function ScreenWrap({ children, centered = true }) {
+  return (
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: centered ? "center" : "flex-start",
+      alignItems: "center",
+      padding: "2rem 1.25rem",
+      maxWidth: 480,
+      margin: "0 auto",
+      width: "100%",
+    }}>
+      {children}
+    </div>
+  );
+}
+
+// ── Screen 0: Ask ─────────────────────────────────────────────────────────────
+
+function AskScreen({ onYes }) {
+  const [noOffset, setNoOffset] = useState({ x: 0, y: 0 });
+  const [yesFactor, setYesFactor] = useState(1);
+  const [attempts, setAttempts] = useState(0);
+
+  const dodgeNo = () => {
+    setAttempts(a => a + 1);
+    setYesFactor(prev => Math.min(prev + 0.18, 2.4));
+    const x = (Math.random() - 0.5) * 160;
+    const y = Math.random() * 30;
+    setNoOffset({ x, y });
+  };
+
+  return (
+    <ScreenWrap>
+      <div style={{ fontSize: 42, marginBottom: "1rem" }}>😅</div>
+      <h1 style={{ fontSize: 24, fontWeight: 600, color: textMain, textAlign: "center", lineHeight: 1.4, marginBottom: "0.75rem" }}>
+        Since I have no rizz, I had to make a website for you.
+      </h1>
+      <p style={{ fontSize: 17, color: textMuted, textAlign: "center", marginBottom: "2.5rem" }}>
+        Will you go on a 2nd date with me? 🥺
+      </p>
+
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
+        <button onClick={onYes} style={{
+          background: pink, color: "#fff", border: "none", borderRadius: 14,
+          padding: "0.75rem 2rem",
+          fontSize: `${Math.round(16 * yesFactor)}px`,
+          fontWeight: 600, cursor: "pointer",
+          transform: `scale(${yesFactor})`, transformOrigin: "center",
+          transition: "transform 0.25s ease, font-size 0.25s ease",
+        }}>
+          Yes 💕
+        </button>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "center", height: 60, alignItems: "flex-start" }}>
+        <button
+          onMouseEnter={dodgeNo}
+          onTouchStart={dodgeNo}
+          onClick={dodgeNo}
+          style={{
+            background: "#fff", color: textMuted, border: `1px solid ${pinkBorder}`,
+            borderRadius: 14, padding: "0.6rem 1.4rem", fontSize: 14,
+            cursor: "not-allowed", userSelect: "none",
+            transform: `translate(${noOffset.x}px, ${noOffset.y}px)`,
+            transition: "transform 0.22s cubic-bezier(.34,1.56,.64,1)",
+          }}
+        >
+          No
+        </button>
+      </div>
+
+      {attempts > 0 && (
+        <p style={{ fontSize: 13, color: "#f4b8cf", marginTop: "1rem", textAlign: "center" }}>
+          {attempts === 1 && "Nice try 😂"}
+          {attempts === 2 && "It's not gonna work lol"}
+          {attempts === 3 && "You can't click it 💀"}
+          {attempts >= 4 && "Just say yes already 😭"}
+        </p>
+      )}
+    </ScreenWrap>
+  );
+}
+
+// ── Screen 1: Knew it ─────────────────────────────────────────────────────────
+
+function KnewItScreen({ onNext }) {
+  return (
+    <ScreenWrap>
+      <div style={{ fontSize: 52, marginBottom: "1rem" }}>🤭</div>
+      <h1 style={{ fontSize: 26, fontWeight: 600, color: textMain, textAlign: "center", lineHeight: 1.4, marginBottom: "2rem" }}>
+        Lol I already knew you were gonna say yes 😉
+      </h1>
+      <button onClick={onNext} style={btnStyle}>Next →</button>
+    </ScreenWrap>
+  );
+}
+
+// ── Screen 2: Countdown ───────────────────────────────────────────────────────
+
+function CountdownScreen({ onNext }) {
+  const [time, setTime] = useState({ d: 0, h: 0, m: 0, s: 0 });
+  useEffect(() => {
+    const target = new Date("2026-07-04T19:00:00");
+    const tick = () => {
+      const diff = target - new Date();
+      if (diff <= 0) return;
+      setTime({
+        d: Math.floor(diff / 86400000),
+        h: Math.floor((diff % 86400000) / 3600000),
+        m: Math.floor((diff % 3600000) / 60000),
+        s: Math.floor((diff % 60000) / 1000),
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  const pad = (n) => String(n).padStart(2, "0");
+
+  return (
+    <ScreenWrap>
+      <div style={{ fontSize: 36, marginBottom: "1rem" }}>🎀</div>
+      <h2 style={{ fontSize: 22, fontWeight: 600, color: textMain, marginBottom: "0.5rem", textAlign: "center" }}>
+        July 4th can't come fast enough
+      </h2>
+      <p style={{ fontSize: 15, color: textMuted, marginBottom: "2rem", textAlign: "center" }}>Counting down...</p>
+      <div style={{ display: "flex", gap: 12, marginBottom: "2.5rem" }}>
+        {[["d", "days"], ["h", "hrs"], ["m", "mins"], ["s", "secs"]].map(([k, label]) => (
+          <div key={k} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{ fontSize: 30, fontWeight: 600, background: pinkLight, borderRadius: 12, width: 64, height: 64, display: "flex", alignItems: "center", justifyContent: "center", color: pink, border: `1px solid ${pinkBorder}` }}>
+              {k === "d" ? time.d : pad(time[k])}
+            </div>
+            <div style={{ fontSize: 11, color: pink, marginTop: 4 }}>{label}</div>
+          </div>
+        ))}
+      </div>
+      <button onClick={onNext} style={btnStyle}>Next →</button>
+    </ScreenWrap>
+  );
+}
+
+
+// ── Pickup time screen ────────────────────────────────────────────────────────
+
+function PickupTimeScreen({ onNext }) {
+  const [pick, setPick] = useState(null);
+  const times = ["8am", "9am", "10am", "12pm", "2pm"];
+
+  return (
+    <ScreenWrap>
+      <div style={{ width: "100%" }}>
+        <div style={{ fontSize: 36, marginBottom: "0.75rem" }}>🕐</div>
+        <h2 style={{ fontSize: 24, fontWeight: 600, color: textMain, marginBottom: "0.4rem" }}>
+          What time do you want me to come?
+        </h2>
+        <p style={{ fontSize: 15, color: textMuted, marginBottom: "1.75rem" }}>
+          Pick a time and I'll be there. 💕
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1.75rem" }}>
+          {times.map((t, i) => (
+            <button key={i} onClick={() => setPick(t)} style={{
+              background: pick === t ? pinkLight : "#fff",
+              border: pick === t ? `2px solid ${pink}` : `1px solid ${pinkBorder}`,
+              borderRadius: 14, padding: "0.9rem 1.1rem",
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 12,
+              transition: "all 0.15s",
+            }}>
+              <span style={{ fontSize: 18 }}>🕐</span>
+              <span style={{ fontSize: 16, fontWeight: pick === t ? 500 : 400, color: pick === t ? pinkDark : textMain, flex: 1, textAlign: "left" }}>
+                {t}
+              </span>
+              {pick === t && (
+                <span style={{ fontSize: 11, background: "#f4c0d1", color: pinkDark, borderRadius: 999, padding: "2px 10px" }}>
+                  locked in ✓
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        <button onClick={() => pick && onNext(pick)} style={{ ...btnStyle, opacity: pick !== null ? 1 : 0.35 }}>
+          Next →
+        </button>
+      </div>
+    </ScreenWrap>
+  );
+}
+
+// ── Quiz screen ───────────────────────────────────────────────────────────────
+
+function QuizScreen({ question, index, total, onNext }) {
+  const [value, setValue] = useState(null);
+  const [textVal, setTextVal] = useState("");
+
+  const canNext = question.type === "text" ? textVal.trim() !== "" : value !== null;
+  const handleNext = () => { if (canNext) onNext(question.type === "text" ? textVal : value); };
+
+  const scaleReaction = (n) => {
+    if (n <= 3) return "Ouch... be honest now 😭";
+    if (n === 4) return "Ok that's fair I guess 😅";
+    if (n === 5) return "Room for improvement 😤";
+    if (n === 6) return "Getting warmer...";
+    if (n === 7) return "I'll take it 😌";
+    if (n === 8) return "Okay okay, not bad 😏";
+    if (n === 9) return "Facts honestly 💅";
+    if (n === 10) return "Ok now you're just being nice 😭🙏";
+    return "";
+  };
+
+  return (
+    <ScreenWrap>
+      <div style={{ width: "100%", marginBottom: "2rem" }}>
+        <div style={{ fontSize: 12, color: pink, marginBottom: "0.5rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+          {index} / {total}
+        </div>
+        <div style={{ height: 3, background: "#fce8f0", borderRadius: 4, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${(index / total) * 100}%`, background: pink, borderRadius: 4, transition: "width 0.4s" }} />
+        </div>
+      </div>
+      <div style={{ width: "100%" }}>
+        <h2 style={{ fontSize: 22, fontWeight: 600, color: textMain, marginBottom: "0.5rem", lineHeight: 1.35 }}>{question.q}</h2>
+        {question.sub && <p style={{ fontSize: 14, color: textMuted, marginBottom: "1.5rem" }}>{question.sub}</p>}
+        {!question.sub && <div style={{ marginBottom: "1.5rem" }} />}
+
+        {question.type === "scale" && (
+          <div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: "1rem" }}>
+              {[1,2,3,4,5,6,7,8,9,10].map(n => (
+                <button key={n} onClick={() => setValue(n)} style={{
+                  width: 48, height: 48, borderRadius: 12,
+                  border: value === n ? `2px solid ${pink}` : `1px solid ${pinkBorder}`,
+                  background: value === n ? pink : "#fff",
+                  color: value === n ? "#fff" : textMain,
+                  fontSize: 16, fontWeight: value === n ? 600 : 400,
+                  cursor: "pointer", transition: "all 0.15s",
+                }}>{n}</button>
+              ))}
+            </div>
+            {value !== null && (
+              <p style={{ fontSize: 14, color: pink, marginBottom: "1rem", minHeight: 24 }}>
+                {scaleReaction(value)}
+              </p>
+            )}
+            <div style={{ marginBottom: "0.5rem" }} />
+          </div>
+        )}
+
+        {question.type === "text" && (
+          <input
+            autoFocus
+            value={textVal}
+            onChange={e => setTextVal(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && canNext && handleNext()}
+            placeholder={question.placeholder}
+            style={{
+              width: "100%", fontSize: 16, padding: "0.8rem 1rem",
+              border: `1.5px solid ${pinkBorder}`, borderRadius: 12,
+              background: pinkLight, color: textMain, fontFamily: "inherit",
+              outline: "none", marginBottom: "1.5rem",
+            }}
+          />
+        )}
+
+        {question.type === "choice" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1.5rem" }}>
+            {question.opts.map((opt, i) => (
+              <button key={i} onClick={() => setValue(opt)} style={{
+                background: value === opt ? pinkLight : "#fff",
+                border: value === opt ? `2px solid ${pink}` : `1px solid ${pinkBorder}`,
+                borderRadius: 12, padding: "0.75rem 1rem", fontSize: 15,
+                color: value === opt ? pinkDark : textMain,
+                cursor: "pointer", textAlign: "left",
+                fontWeight: value === opt ? 500 : 400, transition: "all 0.15s",
+              }}>{opt}</button>
+            ))}
+          </div>
+        )}
+
+        <button onClick={handleNext} style={{ ...btnStyle, opacity: canNext ? 1 : 0.35 }}>
+          {index === total ? "Done ✨" : "Next →"}
+        </button>
+      </div>
+    </ScreenWrap>
+  );
+}
+
+// ── Activity gallery screen ────────────────────────────────────────────────────
+
+function ActivityGalleryScreen({ onNext, subAnswers, setSubAnswers }) {
+  const [revealed, setRevealed] = useState({});
+  const [expanded, setExpanded] = useState(null);
+
+  const reveal = (i) => {
+    setRevealed(prev => ({ ...prev, [i]: true }));
+    setExpanded(i);
+  };
+
+  const collapse = (e, i) => {
+    e.stopPropagation();
+    setExpanded(null);
+  };
+
+  const toggleSub = (ai, opt) => {
+    const activity = ACTIVITIES[ai];
+    if (activity.subType === "multi") {
+      const current = subAnswers[ai] || [];
+      const next = current.includes(opt) ? current.filter(o => o !== opt) : [...current, opt];
+      setSubAnswers(prev => ({ ...prev, [ai]: next }));
+    } else {
+      setSubAnswers(prev => ({ ...prev, [ai]: opt }));
+    }
+  };
+
+  const isSelected = (ai, opt) => {
+    const activity = ACTIVITIES[ai];
+    const ans = subAnswers[ai];
+    if (activity.subType === "multi") return (ans || []).includes(opt);
+    return ans === opt;
+  };
+
+  const allRevealed = ACTIVITIES.every((_, i) => revealed[i]);
+
+  return (
+    <ScreenWrap centered={false}>
+      <div style={{ width: "100%", paddingTop: "1.5rem" }}>
+        <div style={{ fontSize: 12, color: pink, marginBottom: "0.4rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>Date plan</div>
+        <h2 style={{ fontSize: 22, fontWeight: 600, color: textMain, marginBottom: "0.4rem" }}>Here's what we're doing 👀</h2>
+        <p style={{ fontSize: 14, color: textMuted, marginBottom: "1.5rem" }}>Tap each one to reveal the plan</p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: "1.5rem" }}>
+          {ACTIVITIES.map((a, i) => {
+            const isRevealed = revealed[i];
+            const isExp = expanded === i;
+
+            if (isExp) {
+              return (
+                <div key={i} style={{
+                  gridColumn: "1 / -1",
+                  background: a.bg,
+                  borderRadius: 18,
+                  padding: "1.25rem",
+                  border: `2px solid ${a.color}22`,
+                  transition: "all 0.2s",
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
+                    <div>
+                      <div style={{ fontSize: 30, marginBottom: "0.25rem" }}>{a.icon}</div>
+                      <div style={{ fontSize: 17, fontWeight: 600, color: a.color }}>{a.name}</div>
+                      <div style={{ fontSize: 13, color: textMuted, marginTop: 2 }}>{a.teaser}</div>
+                    </div>
+                    <button onClick={(e) => collapse(e, i)} style={{
+                      background: "none", border: "none", fontSize: 20, cursor: "pointer",
+                      color: textMuted, padding: "0 4px", lineHeight: 1,
+                    }}>×</button>
+                  </div>
+                  {a.hype && (
+                    <div style={{ display: "inline-block", fontSize: 11, background: `${a.color}22`, color: a.color, borderRadius: 999, padding: "2px 10px", marginBottom: a.subTitle ? "1rem" : 0 }}>
+                      {a.hype}
+                    </div>
+                  )}
+                  {a.subTitle && (
+                    <div style={{ marginTop: "1rem" }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: a.color, marginBottom: "0.6rem" }}>
+                        {a.subTitle}
+                        {a.subType === "multi" && <span style={{ fontWeight: 400, color: textMuted, marginLeft: 6 }}>(pick as many as you want)</span>}
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {a.subOpts.map((opt, j) => (
+                          <button key={j} onClick={() => toggleSub(i, opt)} style={{
+                            background: isSelected(i, opt) ? a.color : "#fff",
+                            color: isSelected(i, opt) ? "#fff" : textMain,
+                            border: isSelected(i, opt) ? `2px solid ${a.color}` : `1px solid ${pinkBorder}`,
+                            borderRadius: 999, padding: "5px 14px", fontSize: 12,
+                            cursor: "pointer", fontWeight: isSelected(i, opt) ? 500 : 400,
+                            transition: "all 0.15s",
+                          }}>{opt}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <div key={i} onClick={() => reveal(i)} style={{
+                background: isRevealed ? a.bg : "#f5f5f5",
+                borderRadius: 18,
+                padding: "1.1rem",
+                border: isRevealed ? `1.5px solid ${a.color}33` : "1.5px solid #e8e8e8",
+                cursor: "pointer",
+                transition: "all 0.25s",
+                minHeight: 110,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                textAlign: "center",
+                position: "relative",
+                overflow: "hidden",
+              }}>
+                {!isRevealed && (
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
+                    background: "rgba(245,245,245,0.5)",
+                    display: "flex", flexDirection: "column",
+                    alignItems: "center", justifyContent: "center",
+                    borderRadius: 16,
+                    zIndex: 2,
+                  }}>
+                    <div style={{ fontSize: 22, marginBottom: 4 }}>👆</div>
+                    <div style={{ fontSize: 12, color: textMuted }}>Tap to reveal</div>
+                  </div>
+                )}
+                <div style={{ fontSize: 28, marginBottom: "0.4rem", filter: isRevealed ? "none" : "blur(4px)", zIndex: 1 }}>
+                  {a.icon}
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: isRevealed ? a.color : textMuted, filter: isRevealed ? "none" : "blur(6px)", zIndex: 1 }}>
+                  {a.name}
+                </div>
+                {isRevealed && (
+                  <div style={{ fontSize: 11, color: a.color, marginTop: 4, background: `${a.color}18`, borderRadius: 999, padding: "2px 8px" }}>
+                    tap for details
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <button onClick={onNext} style={{ ...btnStyle, opacity: allRevealed ? 1 : 0.35 }}>
+          {allRevealed ? "Next →" : `Reveal all ${ACTIVITIES.length} activities first`}
+        </button>
+      </div>
+    </ScreenWrap>
+  );
+}
+
+// ── Food screen ───────────────────────────────────────────────────────────────
+
+function FoodScreen({ onNext }) {
+  const [pick, setPick] = useState(null);
+  return (
+    <ScreenWrap>
+      <div style={{ width: "100%" }}>
+        <div style={{ fontSize: 36, marginBottom: "0.75rem" }}>🍽️</div>
+        <h2 style={{ fontSize: 24, fontWeight: 600, color: textMain, marginBottom: "0.4rem" }}>What are we eating?</h2>
+        <p style={{ fontSize: 15, color: textMuted, marginBottom: "1.75rem" }}>One vote. Choose wisely.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1.75rem" }}>
+          {FOOD_OPTS.map((f, i) => {
+            const selected = pick === i;
+            const goldColor = "#b45309";
+            return (
+              <button key={i} onClick={() => setPick(i)} style={{
+                background: selected ? (f.best ? "#fff8e6" : pinkLight) : "#fff",
+                border: selected ? `2px solid ${f.best ? goldColor : pink}` : `1px solid ${pinkBorder}`,
+                borderRadius: 14, padding: "0.9rem 1.1rem",
+                cursor: "pointer", display: "flex", alignItems: "center", gap: 12, transition: "all 0.15s",
+              }}>
+                <span style={{ fontSize: 22 }}>{f.icon}</span>
+                <span style={{ fontSize: 15, fontWeight: selected ? 500 : 400, color: selected ? (f.best ? goldColor : pinkDark) : textMain, flex: 1, textAlign: "left" }}>
+                  {f.name}
+                </span>
+                {selected && (
+                  <span style={{ fontSize: 11, background: f.best ? goldColor : "#f4c0d1", color: f.best ? "#fff" : pinkDark, borderRadius: 999, padding: "2px 10px" }}>
+                    {f.best ? "good choice 👑" : "your pick!"}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <button onClick={() => pick !== null && onNext(FOOD_OPTS[pick].name)} style={{ ...btnStyle, opacity: pick !== null ? 1 : 0.35 }}>Next →</button>
+      </div>
+    </ScreenWrap>
+  );
+}
+
+// ── Note screen ───────────────────────────────────────────────────────────────
+
+function NoteScreen({ onNext }) {
+  const [note, setNote] = useState("");
+  const [sent, setSent] = useState(false);
+
+  const send = () => {
+    if (!note.trim()) return;
+    setSent(true);
+    setTimeout(() => onNext(note), 1800);
+  };
+
+  return (
+    <ScreenWrap>
+      <div style={{ width: "100%" }}>
+        <div style={{ fontSize: 36, marginBottom: "0.75rem" }}>💌</div>
+        <h2 style={{ fontSize: 24, fontWeight: 600, color: textMain, marginBottom: "0.4rem" }}>
+          Is there anything you want to add to the date?
+        </h2>
+        <p style={{ fontSize: 15, color: textMuted, marginBottom: "1.5rem" }}>
+          Or just leave a note 😘
+        </p>
+        {sent ? (
+          <div style={{ textAlign: "center", padding: "1.5rem 0", fontSize: 15, color: pink, fontWeight: 500 }}>
+            Aww, he'll love reading this 🥹
+          </div>
+        ) : (
+          <>
+            <textarea
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              placeholder="Anything goes..."
+              style={{
+                width: "100%", minHeight: 120, resize: "vertical", fontSize: 15,
+                border: `1px solid ${pinkBorder}`, borderRadius: 12, padding: "0.85rem",
+                background: pinkLight, color: textMain, fontFamily: "inherit",
+                display: "block", marginBottom: "1rem", outline: "none",
+              }}
+            />
+            <button onClick={send} style={{ ...btnStyle, opacity: note.trim() ? 1 : 0.35 }}>
+              Send it 💕
+            </button>
+          </>
+        )}
+      </div>
+    </ScreenWrap>
+  );
+}
+
+// ── Final screen ──────────────────────────────────────────────────────────────
+
+function FinalScreen() {
+  return (
+    <ScreenWrap>
+      <div style={{ fontSize: 52, marginBottom: "1rem" }}>🎀</div>
+      <h1 style={{ fontSize: 26, fontWeight: 600, color: textMain, textAlign: "center", lineHeight: 1.4, marginBottom: "0.75rem" }}>
+        You're amazing, Jamella
+      </h1>
+      <p style={{ fontSize: 16, color: textMuted, textAlign: "center", marginBottom: "0.5rem" }}>
+        July 4th is gonna be so fun.
+      </p>
+      <p style={{ fontSize: 15, color: pink, textAlign: "center" }}>
+        He's already taking notes 📝💕
+      </p>
+    </ScreenWrap>
+  );
+}
+
+// ── App / flow ────────────────────────────────────────────────────────────────
+
+export default function App() {
+  const [step, setStep] = useState(0);
+  const [quizAnswers, setQuizAnswers] = useState({});
+  const [subAnswers, setSubAnswers] = useState({});
+  const [pickupTime, setPickupTime] = useState(null);
+  const [foodPick, setFoodPick] = useState(null);
+  const [noteText, setNoteText] = useState("");
+  const [visible, setVisible] = useState(true);
+
+  const STEP_ASK       = 0;
+  const STEP_KNEWIT    = 1;
+  const STEP_COUNTDOWN = 2;
+  const STEP_PICKUP    = 3;
+  const STEP_QUIZ_START = 4;
+  const STEP_QUIZ_END   = STEP_QUIZ_START + QUESTIONS.length - 1;
+  const STEP_GALLERY    = STEP_QUIZ_END + 1;
+  const STEP_FOOD       = STEP_GALLERY + 1;
+  const STEP_NOTE       = STEP_FOOD + 1;
+  const STEP_FINAL      = STEP_NOTE + 1;
+
+  const go = (n) => {
+    setVisible(false);
+    setTimeout(() => { setStep(n); setVisible(true); }, 280);
+  };
+  const next = () => go(step + 1);
+
+  const submitToSheet = async (note) => {
+    const activityData = {};
+    ACTIVITIES.forEach((a, i) => {
+      const ans = subAnswers[i];
+      activityData[a.name] = Array.isArray(ans) ? ans.join(", ") : (ans || "—");
+    });
+
+    const data = {
+      pickup_time: pickupTime || "—",
+      rizz_rating: quizAnswers[0] || "—",
+      fav_candy: quizAnswers[1] || "—",
+      fav_chocolate: quizAnswers[2] || "—",
+      movie_night: quizAnswers[3] || "—",
+      love_language: quizAnswers[4] || "—",
+      food_pick: foodPick || "—",
+      note: note || "—",
+      ...activityData,
+      submitted_at: new Date().toLocaleString(),
+    };
+
+    try {
+      await fetch(SHEETDB_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: [data] }),
+      });
+    } catch (e) {
+      console.error("Sheet submit failed:", e);
+    }
+  };
+
+  const screen = () => {
+    if (step === STEP_ASK)       return <AskScreen onYes={next} />;
+    if (step === STEP_KNEWIT)    return <KnewItScreen onNext={next} />;
+    if (step === STEP_COUNTDOWN) return <CountdownScreen onNext={next} />;
+    if (step === STEP_PICKUP)    return <PickupTimeScreen onNext={(t) => { setPickupTime(t); next(); }} />;
+    if (step >= STEP_QUIZ_START && step <= STEP_QUIZ_END) {
+      const qi = step - STEP_QUIZ_START;
+      return (
+        <QuizScreen key={step} question={QUESTIONS[qi]} index={qi + 1} total={QUESTIONS.length}
+          onNext={(val) => { setQuizAnswers(prev => ({ ...prev, [qi]: val })); next(); }}
+        />
+      );
+    }
+    if (step === STEP_GALLERY) return (
+      <ActivityGalleryScreen onNext={next} subAnswers={subAnswers} setSubAnswers={setSubAnswers} />
+    );
+    if (step === STEP_FOOD)  return <FoodScreen onNext={(f) => { setFoodPick(f); next(); }} />;
+    if (step === STEP_NOTE)  return <NoteScreen onNext={(n) => { setNoteText(n); submitToSheet(n); next(); }} />;
+    if (step === STEP_FINAL) return <FinalScreen />;
+    return null;
+  };
+
+  return (
+    <div style={{
+      fontFamily: "system-ui, -apple-system, sans-serif",
+      minHeight: "100vh",
+      background: "#fffbfd",
+      opacity: visible ? 1 : 0,
+      transform: visible ? "translateY(0)" : "translateY(12px)",
+      transition: "opacity 0.28s ease, transform 0.28s ease",
+    }}>
+      {screen()}
+    </div>
+  );
+}
