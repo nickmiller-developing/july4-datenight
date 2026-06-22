@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>July 4th 🎀</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #fffbfd; font-family: system-ui, -apple-system, sans-serif; }
+    input, textarea, button { font-family: inherit; }
+    #root:empty::after { content: "Loading..."; display: block; text-align: center; padding: 3rem; color: #888; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js" crossorigin></script>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect } = React;
+
+    const QUESTIONS = [
+      { q: "On a scale of 1\u201310, how good is Nick's rizz?", sub: "Try not to say 10\u2026 level impossible \uD83E\uDD2D", type: "scale" },
+      { q: "What's your favourite candy?", type: "text", placeholder: "Don't hold back..." },
+      { q: "What's your favourite chocolate?", type: "text", placeholder: "Be specific lol" },
+      { q: "If we're doing a movie night, what are we watching?", type: "choice", opts: ["Romance \u2014 obviously", "Horror (I like fear)", "Comedy, keep it light", "I'll fall asleep either way", "Other (she has taste \uD83D\uDC40)"] },
+      { q: "What's your love language for receiving?", type: "choice", opts: ["Words of affirmation", "Quality time", "Acts of service", "Thoughtful gifts"] },
+    ];
+
+    const ACTIVITIES = [
+      { icon: "\uD83E\uDDF1", name: "Lego", teaser: "What's up suki, what's up bullet \uD83E\uDDF1", hype: "", subTitle: "Which set are you picking?", subType: "vote", subOpts: ["Honda S2000 \uD83D\uDE97", "Nissan R34 \uD83C\uDFCE\uFE0F", "Porsche 911 \uD83C\uDFC1", "Toyota Supra \uD83D\uDD25", "Other \uD83D\uDC40"], bg: "#eef2ff", color: "#4338ca" },
+      { icon: "\uD83D\uDCF8", name: "Photo booth", teaser: "The little arcade booth \u2014 pics we're keeping forever.", hype: "Your gonna mog me in the photos \uD83D\UDDFFL\uDDFF", subTitle: "What's the one pic you definitely want?", subType: "vote", subOpts: ["The cute one \uD83E\uDD70", "The silly one \uD83D\uDE02", "The candid laugh", "The cool serious one", "All of the above"], bg: "#fff0f6", color: "#d4537e" },
+      { icon: "\uD83D\uDECD\uFE0F", name: "Thrifting", teaser: "Tuffest fits we're gonna construct \uD83D\uDD25", hype: "Find something fire \uD83D\uDD25", subTitle: "What vibe are we going for?", subType: "vote", subOpts: ["Y2K / retro fits", "Cozy & oversized", "Streetwear finds", "Whatever catches our eye"], bg: "#f0fdf4", color: "#16a34a" },
+      { icon: "\uD83C\uDF53", name: "Hwachae", teaser: "EATING HWACHAE WITH MY COUSIN.... \uD83C\uDF53", hype: "So refreshing \uD83C\uDF49", subTitle: "What fruits do you want in it?", subType: "multi", subOpts: ["Strawberry \uD83C\uDF53", "Blueberry 🫐", "Watermelon \uD83C\uDF49", "Pineapple \uD83C\uDF4D", "I don't care", "Other"], bg: "#fef9ec", color: "#b45309" },
+      { icon: "\uD83D\uDE97", name: "Car rotting", teaser: "Good music, good snacks, good company \uD83D\uDE97", hype: "Best part of any day \uD83E\uDD79", subTitle: "What are we doing in the car?", subType: "vote", subOpts: ["Listen to our playlist \uD83C\uDFB5", "\uD83D\uDE18", "Yap", "All of the above"], bg: "#fff8e6", color: "#92400e" },
+      { icon: "\uD83D\uDEB6", name: "Walk", teaser: "Walking for no reason \uD83D\uDEB6", hype: "Fresh air hits different \uD83C\uDF3F", subTitle: "Where are we walking?", subType: "vote", subOpts: ["Walk around a park \uD83C\uDF33", "Walk in the city \uD83C\uDFD9\uFE0F", "Walk around a random neighbourhood \uD83C\uDFD8\uFE0F", "No more walking \uD83D\uDE2D", "Other"], bg: "#f0fdf4", color: "#15803d" },
+    ];
+
+    const FOOD_OPTS = [
+      { name: "Chipotle", icon: "\uD83C\uDF2F" },
+      { name: "Shake Shack", icon: "\uD83C\uDF54" },
+      { name: "McDonald's", icon: "\uD83C\uDF5F" },
+      { name: "Tim Hortons", icon: "\u2615" },
+      { name: "Nick will choose (Best Option)", icon: "\uD83D\uDC51", best: true },
+      { name: "Other", icon: "\uD83C\uDF7D\uFE0F" },
+    ];
+
+    const SHEETDB_URL = "https://sheetdb.io/api/v1/a9xezlb0zpixk";
+
+    const PHOTOS = [
+      "photo1.jpeg","photo2.JPG","photo3.JPG","photo4.jpeg","photo5.JPG",
+      "photo6.jpeg","photo7.JPG","photo8.jpeg","photo9.JPG","photo10.jpeg",
+      "photo11.JPG","photo12.jpeg","photo13.JPG","photo14.JPG","photo15.JPG",
+      "photo16.JPG","photo17.jpeg","photo18.jpeg","photo19.JPG","photo20.JPG"
+    ];
+    const VIDEOS = [
+      "videos1.mp4","videos2.mp4","videos3.mp4","videos4.mp4","videos5.mp4"
+    ];
+
+    const pink = "#d4537e", pinkLight = "#fff0f6", pinkBorder = "#f0d0dc", pinkDark = "#993556", textMain = "#2c2c2a", textMuted = "#888780";
+    const btn = { background: pink, color: "#fff", border: "none", borderRadius: 14, padding: "0.8rem 2rem", fontSize: 16, fontWeight: 600, cursor: "pointer", width: "100%" };
+
+    function Wrap({ children, top }) {
+      return (
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: top ? "flex-start" : "center", alignItems: "center", padding: "2rem 1.25rem", maxWidth: 480, margin: "0 auto", width: "100%" }}>
+          {children}
+        </div>
+      );
+    }
+
+
+
+    function PhotoPair({ a, b }) {
+      return (
+        <div style={{ display: "flex", gap: 10, marginBottom: "1.5rem", width: "100%" }}>
+          <div style={{ flex: 1, borderRadius: 16, overflow: "hidden", height: 160 }}>
+            <img src={PHOTOS[a-1]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <div style={{ flex: 1, borderRadius: 16, overflow: "hidden", height: 160 }}>
+            <img src={PHOTOS[b-1]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+        </div>
+      );
+    }
+
+    function PhotoSingle({ n, caption }) {
+      return (
+        <div style={{ width: "100%", borderRadius: 16, overflow: "hidden", marginBottom: "1.25rem", position: "relative" }}>
+          <img src={PHOTOS[n-1]} alt="" style={{ width: "100%", height: 220, objectFit: "cover", display: "block" }} />
+          {caption && <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.4))", padding: "1rem 0.75rem 0.6rem", color: "#fff", fontSize: 13, fontWeight: 500 }}>{caption}</div>}
+        </div>
+      );
+    }
+
+    function AskScreen({ onYes }) {
+      const [noOffset, setNoOffset] = useState({ x: 0, y: 0 });
+      const [yesFactor, setYesFactor] = useState(1);
+      const [attempts, setAttempts] = useState(0);
+      const dodge = () => {
+        setAttempts(a => a + 1);
+        setYesFactor(p => Math.min(p + 0.18, 2.4));
+        setNoOffset({ x: (Math.random() - 0.5) * 160, y: Math.random() * 30 });
+      };
+      const msg = attempts === 0 ? "" : attempts === 1 ? "Nice try \uD83D\uDE02" : attempts === 2 ? "It's not gonna work lol" : attempts === 3 ? "You can't click it \uD83D\uDC80" : "Just say yes already \uD83D\uDE2D";
+      return (
+        <Wrap>
+          <div style={{ width: "100%", textAlign: "center" }}>
+          <div style={{ fontSize: 42, marginBottom: "1rem" }}>😅</div>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: textMain, textAlign: "center", lineHeight: 1.4, marginBottom: "0.75rem" }}>Since I have no rizz, I had to make a website for you.</h1>
+          <p style={{ fontSize: 17, color: textMuted, textAlign: "center", marginBottom: "1.25rem" }}>Will you go on a 2nd date with me? 🥺</p>
+          <PhotoPair a={3} b={20} />
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
+            <button onClick={onYes} style={{ background: pink, color: "#fff", border: "none", borderRadius: 14, padding: "0.75rem 2rem", fontSize: Math.round(16 * yesFactor), fontWeight: 600, cursor: "pointer", transform: "scale(" + yesFactor + ")", transformOrigin: "center", transition: "transform 0.25s ease" }}>
+              Yes 💕
+            </button>
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", height: 60, alignItems: "flex-start" }}>
+            <button onMouseEnter={dodge} onTouchStart={dodge} onClick={dodge} style={{ background: "#fff", color: textMuted, border: "1px solid " + pinkBorder, borderRadius: 14, padding: "0.6rem 1.4rem", fontSize: 14, cursor: "not-allowed", userSelect: "none", transform: "translate(" + noOffset.x + "px," + noOffset.y + "px)", transition: "transform 0.22s cubic-bezier(.34,1.56,.64,1)" }}>No</button>
+          </div>
+          {attempts > 0 && <p style={{ fontSize: 13, color: "#f4b8cf", marginTop: "1rem", textAlign: "center" }}>{msg}</p>}
+          </div>
+        </Wrap>
+      );
+    }
+
+    function KnewItScreen({ onNext }) {
+      return (
+        <Wrap>
+          <div style={{ fontSize: 52, marginBottom: "1rem" }}>🤭</div>
+          <h1 style={{ fontSize: 26, fontWeight: 600, color: textMain, textAlign: "center", lineHeight: 1.4, marginBottom: "2rem" }}>Lol I already knew you were gonna say yes 😉</h1>
+          <PhotoPair a={11} b={19} />
+          <button onClick={onNext} style={btn}>Next →</button>
+        </Wrap>
+      );
+    }
+
+    function CountdownScreen({ onNext }) {
+      const [time, setTime] = useState({ d: 0, h: 0, m: 0, s: 0 });
+      useEffect(() => {
+        const target = new Date("2026-07-04T19:00:00");
+        const tick = () => {
+          const diff = target - new Date();
+          if (diff <= 0) return;
+          setTime({ d: Math.floor(diff / 86400000), h: Math.floor((diff % 86400000) / 3600000), m: Math.floor((diff % 3600000) / 60000), s: Math.floor((diff % 60000) / 1000) });
+        };
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+      }, []);
+      const pad = n => String(n).padStart(2, "0");
+      return (
+        <Wrap>
+          <div style={{ fontSize: 36, marginBottom: "1rem" }}>🎀</div>
+          <h2 style={{ fontSize: 22, fontWeight: 600, color: textMain, marginBottom: "0.5rem", textAlign: "center" }}>July 4th can't come fast enough</h2>
+          <p style={{ fontSize: 15, color: textMuted, marginBottom: "2rem", textAlign: "center" }}>Counting down...</p>
+          <div style={{ display: "flex", gap: 12, marginBottom: "2.5rem" }}>
+            {[["d","days"],["h","hrs"],["m","mins"],["s","secs"]].map(([k, label]) => (
+              <div key={k} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <div style={{ fontSize: 30, fontWeight: 600, background: pinkLight, borderRadius: 12, width: 64, height: 64, display: "flex", alignItems: "center", justifyContent: "center", color: pink, border: "1px solid " + pinkBorder }}>
+                  {k === "d" ? time.d : pad(time[k])}
+                </div>
+                <div style={{ fontSize: 11, color: pink, marginTop: 4 }}>{label}</div>
+              </div>
+            ))}
+          </div>
+          <PhotoPair a={7} b={15} />
+          <button onClick={onNext} style={btn}>Next →</button>
+        </Wrap>
+      );
+    }
+
+    function PickupTimeScreen({ onNext }) {
+      const [pick, setPick] = useState(null);
+      const times = ["8am", "9am", "10am", "12pm", "2pm"];
+      return (
+        <Wrap>
+          <div style={{ width: "100%" }}>
+            <PhotoSingle n={4} caption="July 4th 🎀" />
+            <div style={{ fontSize: 36, marginBottom: "0.75rem" }}>🕐</div>
+            <h2 style={{ fontSize: 24, fontWeight: 600, color: textMain, marginBottom: "0.4rem" }}>What time do you want me to come?</h2>
+            <p style={{ fontSize: 15, color: textMuted, marginBottom: "1.75rem" }}>Pick a time and I'll be there. 💕</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1.75rem" }}>
+              {times.map((t, i) => (
+                <button key={i} onClick={() => setPick(t)} style={{ background: pick === t ? pinkLight : "#fff", border: pick === t ? "2px solid " + pink : "1px solid " + pinkBorder, borderRadius: 14, padding: "0.9rem 1.1rem", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, transition: "all 0.15s" }}>
+                  <span style={{ fontSize: 18 }}>🕐</span>
+                  <span style={{ fontSize: 16, fontWeight: pick === t ? 500 : 400, color: pick === t ? pinkDark : textMain, flex: 1, textAlign: "left" }}>{t}</span>
+                  {pick === t && <span style={{ fontSize: 11, background: "#f4c0d1", color: pinkDark, borderRadius: 999, padding: "2px 10px" }}>locked in ✓</span>}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => pick && onNext(pick)} style={{ ...btn, opacity: pick ? 1 : 0.35 }}>Next →</button>
+          </div>
+        </Wrap>
+      );
+    }
+
+    function QuizScreen({ question, index, total, onNext }) {
+      const [value, setValue] = useState(null);
+      const [textVal, setTextVal] = useState("");
+      const canNext = question.type === "text" ? textVal.trim() !== "" : value !== null;
+      const handleNext = () => { if (canNext) onNext(question.type === "text" ? textVal : value); };
+      const reactions = ["","Ouch... be honest now 😭","Ouch... be honest now 😭","Ouch... be honest now 😭","Ok that's fair I guess 😅","Room for improvement 😤","Getting warmer...","I'll take it 😌","Okay okay, not bad 😏","Facts honestly 💅","Ok now you're just being nice 😭🙏"];
+      return (
+        <Wrap>
+          <div style={{ width: "100%", marginBottom: "2rem" }}>
+            <div style={{ fontSize: 12, color: pink, marginBottom: "0.5rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>{index} / {total}</div>
+            <div style={{ height: 3, background: "#fce8f0", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: ((index / total) * 100) + "%", background: pink, borderRadius: 4, transition: "width 0.4s" }} />
+            </div>
+          </div>
+          <div style={{ width: "100%" }}>
+            <h2 style={{ fontSize: 22, fontWeight: 600, color: textMain, marginBottom: "0.5rem", lineHeight: 1.35 }}>{question.q}</h2>
+            {question.sub ? <p style={{ fontSize: 14, color: textMuted, marginBottom: "1.5rem" }}>{question.sub}</p> : <div style={{ marginBottom: "1.5rem" }} />}
+            {question.type === "scale" && (
+              <div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: "1rem" }}>
+                  {[1,2,3,4,5,6,7,8,9,10].map(n => (
+                    <button key={n} onClick={() => setValue(n)} style={{ width: 48, height: 48, borderRadius: 12, border: value === n ? "2px solid " + pink : "1px solid " + pinkBorder, background: value === n ? pink : "#fff", color: value === n ? "#fff" : textMain, fontSize: 16, fontWeight: value === n ? 600 : 400, cursor: "pointer", transition: "all 0.15s" }}>{n}</button>
+                  ))}
+                </div>
+                {value !== null && <p style={{ fontSize: 14, color: pink, marginBottom: "1rem" }}>{reactions[value]}</p>}
+                <div style={{ marginBottom: "0.5rem" }} />
+              </div>
+            )}
+            {question.type === "text" && (
+              <input autoFocus value={textVal} onChange={e => setTextVal(e.target.value)} onKeyDown={e => e.key === "Enter" && canNext && handleNext()} placeholder={question.placeholder} style={{ width: "100%", fontSize: 16, padding: "0.8rem 1rem", border: "1.5px solid " + pinkBorder, borderRadius: 12, background: pinkLight, color: textMain, outline: "none", marginBottom: "1.5rem" }} />
+            )}
+            {question.type === "choice" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1.5rem" }}>
+                {question.opts.map((opt, i) => (
+                  <button key={i} onClick={() => setValue(opt)} style={{ background: value === opt ? pinkLight : "#fff", border: value === opt ? "2px solid " + pink : "1px solid " + pinkBorder, borderRadius: 12, padding: "0.75rem 1rem", fontSize: 15, color: value === opt ? pinkDark : textMain, cursor: "pointer", textAlign: "left", fontWeight: value === opt ? 500 : 400, transition: "all 0.15s" }}>{opt}</button>
+                ))}
+              </div>
+            )}
+            <button onClick={handleNext} style={{ ...btn, opacity: canNext ? 1 : 0.35 }}>{index === total ? "Done ✨" : "Next →"}</button>
+          </div>
+        </Wrap>
+      );
+    }
+
+    function ActivityGalleryScreen({ onNext, subAnswers, setSubAnswers }) {
+      const [revealed, setRevealed] = useState({});
+      const [expanded, setExpanded] = useState(null);
+      const reveal = i => { setRevealed(p => ({ ...p, [i]: true })); setExpanded(i); };
+      const toggleSub = (ai, opt) => {
+        const a = ACTIVITIES[ai];
+        if (a.subType === "multi") {
+          const cur = subAnswers[ai] || [];
+          setSubAnswers(p => ({ ...p, [ai]: cur.includes(opt) ? cur.filter(o => o !== opt) : [...cur, opt] }));
+        } else {
+          setSubAnswers(p => ({ ...p, [ai]: opt }));
+        }
+      };
+      const isSel = (ai, opt) => { const a = ACTIVITIES[ai]; const ans = subAnswers[ai]; return a.subType === "multi" ? (ans || []).includes(opt) : ans === opt; };
+      const allRevealed = ACTIVITIES.every((_, i) => revealed[i]);
+      const allPicked = ACTIVITIES.every((a, i) => {
+        const ans = subAnswers[i];
+        if (!a.subTitle) return true;
+        if (a.subType === "multi") return ans && ans.length > 0;
+        return ans !== undefined && ans !== null;
+      });
+      const canProceed = allRevealed && allPicked;
+      return (
+        <Wrap top>
+          <div style={{ width: "100%", paddingTop: "1.5rem" }}>
+            <div style={{ fontSize: 12, color: pink, marginBottom: "0.4rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>Date plan</div>
+            <h2 style={{ fontSize: 22, fontWeight: 600, color: textMain, marginBottom: "0.4rem" }}>Here's what we're doing 👀</h2>
+            <p style={{ fontSize: 14, color: textMuted, marginBottom: "1.5rem" }}>Tap each one to reveal the plan</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: "1.5rem" }}>
+              {ACTIVITIES.map((a, i) => {
+                if (expanded === i) return (
+                  <div key={i} style={{ gridColumn: "1 / -1", background: a.bg, borderRadius: 18, padding: "1.25rem", border: "2px solid " + a.color + "22" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
+                      <div>
+                        <div style={{ fontSize: 30, marginBottom: "0.25rem" }}>{a.icon}</div>
+                        <div style={{ fontSize: 17, fontWeight: 600, color: a.color }}>{a.name}</div>
+                        <div style={{ fontSize: 13, color: textMuted, marginTop: 2 }}>{a.teaser}</div>
+                      </div>
+                      <button onClick={e => { e.stopPropagation(); setExpanded(null); }} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: textMuted, padding: "0 4px" }}>×</button>
+                    </div>
+                    {a.hype ? <div style={{ display: "inline-block", fontSize: 11, background: a.color + "22", color: a.color, borderRadius: 999, padding: "2px 10px", marginBottom: a.subTitle ? "1rem" : 0 }}>{a.hype}</div> : null}
+                    {a.subTitle && (
+                      <div style={{ marginTop: "1rem" }}>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: a.color, marginBottom: "0.6rem" }}>
+                          {a.subTitle}
+                          {a.subType === "multi" && <span style={{ fontWeight: 400, color: textMuted, marginLeft: 6 }}>(pick as many as you want)</span>}
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                          {a.subOpts.map((opt, j) => (
+                            <button key={j} onClick={() => toggleSub(i, opt)} style={{ background: isSel(i, opt) ? a.color : "#fff", color: isSel(i, opt) ? "#fff" : textMain, border: isSel(i, opt) ? "2px solid " + a.color : "1px solid " + pinkBorder, borderRadius: 999, padding: "5px 14px", fontSize: 12, cursor: "pointer", fontWeight: isSel(i, opt) ? 500 : 400, transition: "all 0.15s" }}>{opt}</button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+                const isRev = revealed[i];
+                return (
+                  <div key={i} onClick={() => reveal(i)} style={{ background: isRev ? a.bg : "#f5f5f5", borderRadius: 18, padding: "1.1rem", border: isRev ? "1.5px solid " + a.color + "33" : "1.5px solid #e8e8e8", cursor: "pointer", transition: "all 0.25s", minHeight: 110, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", position: "relative", overflow: "hidden" }}>
+                    {!isRev && (
+                      <div style={{ position: "absolute", inset: 0, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", background: "rgba(245,245,245,0.5)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderRadius: 16, zIndex: 2 }}>
+                        <div style={{ fontSize: 22, marginBottom: 4 }}>👆</div>
+                        <div style={{ fontSize: 12, color: textMuted }}>Tap to reveal</div>
+                      </div>
+                    )}
+                    <div style={{ fontSize: 28, marginBottom: "0.4rem", filter: isRev ? "none" : "blur(4px)", zIndex: 1 }}>{a.icon}</div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: isRev ? a.color : textMuted, filter: isRev ? "none" : "blur(6px)", zIndex: 1 }}>{a.name}</div>
+                    {isRev && <div style={{ fontSize: 11, color: a.color, marginTop: 4, background: a.color + "18", borderRadius: 999, padding: "2px 8px" }}>tap for details</div>}
+                  </div>
+                );
+              })}
+            </div>
+            <button onClick={onNext} style={{ ...btn, opacity: canProceed ? 1 : 0.35 }}>
+              {!allRevealed ? "Reveal all " + ACTIVITIES.length + " activities first" : !allPicked ? "Pick at least one option for each activity" : "Next →"}
+            </button>
+          </div>
+        </Wrap>
+      );
+    }
+
+    function FoodScreen({ onNext }) {
+      const [pick, setPick] = useState(null);
+      return (
+        <Wrap>
+          <div style={{ width: "100%" }}>
+            <PhotoPair a={2} b={16} />
+            <div style={{ fontSize: 36, marginBottom: "0.75rem" }}>🍽️</div>
+            <h2 style={{ fontSize: 24, fontWeight: 600, color: textMain, marginBottom: "0.4rem" }}>What are we eating?</h2>
+            <p style={{ fontSize: 15, color: textMuted, marginBottom: "1.75rem" }}>One vote. Choose wisely.</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: "1.75rem" }}>
+              {FOOD_OPTS.map((f, i) => {
+                const sel = pick === i;
+                const gold = "#b45309";
+                return (
+                  <button key={i} onClick={() => setPick(i)} style={{ background: sel ? (f.best ? "#fff8e6" : pinkLight) : "#fff", border: sel ? "2px solid " + (f.best ? gold : pink) : "1px solid " + pinkBorder, borderRadius: 14, padding: "0.9rem 1.1rem", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, transition: "all 0.15s" }}>
+                    <span style={{ fontSize: 22 }}>{f.icon}</span>
+                    <span style={{ fontSize: 15, fontWeight: sel ? 500 : 400, color: sel ? (f.best ? gold : pinkDark) : textMain, flex: 1, textAlign: "left" }}>{f.name}</span>
+                    {sel && <span style={{ fontSize: 11, background: f.best ? gold : "#f4c0d1", color: f.best ? "#fff" : pinkDark, borderRadius: 999, padding: "2px 10px" }}>{f.best ? "good choice 👑" : "your pick!"}</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={() => pick !== null && onNext(FOOD_OPTS[pick].name)} style={{ ...btn, opacity: pick !== null ? 1 : 0.35 }}>Next →</button>
+          </div>
+        </Wrap>
+      );
+    }
+
+    function NoteScreen({ onNext }) {
+      const [note, setNote] = useState("");
+      const [sent, setSent] = useState(false);
+      const send = () => { if (!note.trim()) return; setSent(true); setTimeout(() => onNext(note), 1800); };
+      return (
+        <Wrap>
+          <div style={{ width: "100%" }}>
+            <div style={{ fontSize: 36, marginBottom: "0.75rem" }}>💌</div>
+            <PhotoPair a={17} b={9} />
+            <h2 style={{ fontSize: 24, fontWeight: 600, color: textMain, marginBottom: "0.4rem" }}>Is there anything you want to add to the date?</h2>
+            <p style={{ fontSize: 15, color: textMuted, marginBottom: "1.5rem" }}>Or just leave a note 😘</p>
+            {sent ? (
+              <div style={{ textAlign: "center", padding: "1.5rem 0", fontSize: 15, color: pink, fontWeight: 500 }}>Aww, he'll love reading this 🥹</div>
+            ) : (
+              <div>
+                <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Anything goes..." style={{ width: "100%", minHeight: 120, resize: "vertical", fontSize: 15, border: "1px solid " + pinkBorder, borderRadius: 12, padding: "0.85rem", background: pinkLight, color: textMain, display: "block", marginBottom: "1rem", outline: "none" }} />
+                <button onClick={send} style={{ ...btn, opacity: note.trim() ? 1 : 0.35 }}>Send it 💕</button>
+              </div>
+            )}
+          </div>
+        </Wrap>
+      );
+    }
+
+    function FinalScreen() {
+      return (
+        <Wrap top>
+          <div style={{ width: "100%", textAlign: "center", paddingTop: "1.5rem" }}>
+            <PhotoPair a={1} b={20} />
+            <div style={{ fontSize: 52, marginBottom: "0.5rem" }}>🎀</div>
+            <h1 style={{ fontSize: 26, fontWeight: 600, color: textMain, textAlign: "center", lineHeight: 1.4, marginBottom: "0.4rem" }}>You're amazing, Jamella</h1>
+            <p style={{ fontSize: 16, color: textMuted, textAlign: "center", marginBottom: "0.25rem" }}>July 4th is gonna be so fun.</p>
+            <p style={{ fontSize: 15, color: pink, textAlign: "center", marginBottom: "1.5rem" }}>He's already taking notes 📝💕</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: "1rem" }}>
+              {VIDEOS.map((src, i) => (
+                <video key={i} src={src} autoPlay muted loop playsInline style={{ width: "100%", borderRadius: 14, objectFit: "cover", height: 180, background: "#000" }} />
+              ))}
+              <div style={{ background: pinkLight, borderRadius: 14, height: 180, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontSize: 32 }}>🎀</span>
+              </div>
+            </div>
+          </div>
+        </Wrap>
+      );
+    }
+
+    function App() {
+      const [step, setStep] = useState(0);
+      const [quizAnswers, setQuizAnswers] = useState({});
+      const [subAnswers, setSubAnswers] = useState({});
+      const [pickupTime, setPickupTime] = useState(null);
+      const [foodPick, setFoodPick] = useState(null);
+      const [visible, setVisible] = useState(true);
+
+      const S = { ASK:0, KNEWIT:1, COUNTDOWN:2, PICKUP:3, QUIZ:4, QUIZ_END: 4 + QUESTIONS.length - 1 };
+      S.GALLERY = S.QUIZ_END + 1;
+      S.FOOD = S.GALLERY + 1;
+      S.NOTE = S.FOOD + 1;
+      S.FINAL = S.NOTE + 1;
+
+      const go = n => { setVisible(false); setTimeout(() => { setStep(n); setVisible(true); }, 280); };
+      const next = () => go(step + 1);
+
+      const submit = async (note) => {
+        const acts = {};
+        ACTIVITIES.forEach((a, i) => { const ans = subAnswers[i]; acts[a.name] = Array.isArray(ans) ? ans.join(", ") : (ans || "—"); });
+        const data = { pickup_time: pickupTime || "—", rizz_rating: quizAnswers[0] || "—", fav_candy: quizAnswers[1] || "—", fav_chocolate: quizAnswers[2] || "—", movie_night: quizAnswers[3] || "—", love_language: quizAnswers[4] || "—", food_pick: foodPick || "—", note: note || "—", ...acts, submitted_at: new Date().toLocaleString() };
+        try {
+          console.log("Sending data:", JSON.stringify(data));
+          const res = await fetch(SHEETDB_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify({ data: [data] })
+          });
+          const text = await res.text();
+          console.log("SheetDB status:", res.status, "response:", text);
+        } catch(e) { console.error("Fetch error:", e); }
+      };
+
+      const screen = () => {
+        if (step === S.ASK) return <AskScreen onYes={next} />;
+        if (step === S.KNEWIT) return <KnewItScreen onNext={next} />;
+        if (step === S.COUNTDOWN) return <CountdownScreen onNext={next} />;
+        if (step === S.PICKUP) return <PickupTimeScreen onNext={t => { setPickupTime(t); next(); }} />;
+        if (step >= S.QUIZ && step <= S.QUIZ_END) {
+          const qi = step - S.QUIZ;
+          return <QuizScreen key={step} question={QUESTIONS[qi]} index={qi+1} total={QUESTIONS.length} onNext={val => { setQuizAnswers(p => ({ ...p, [qi]: val })); next(); }} />;
+        }
+        if (step === S.GALLERY) return <ActivityGalleryScreen onNext={next} subAnswers={subAnswers} setSubAnswers={setSubAnswers} />;
+        if (step === S.FOOD) return <FoodScreen onNext={f => { setFoodPick(f); next(); }} />;
+        if (step === S.NOTE) return <NoteScreen onNext={n => { submit(n); next(); }} />;
+        if (step === S.FINAL) return <FinalScreen />;
+        return null;
+      };
+
+      return (
+        <div style={{ fontFamily: "system-ui, sans-serif", minHeight: "100vh", background: "#fffbfd", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(12px)", transition: "opacity 0.28s ease, transform 0.28s ease" }}>
+          {screen()}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
