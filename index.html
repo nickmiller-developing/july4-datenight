@@ -37,9 +37,9 @@
       { icon: "\uD83E\uDDF1", name: "Lego", teaser: "What's up suki, what's up bullet \uD83E\uDDF1", hype: "", subTitle: "Which set are you picking?", subType: "vote", subOpts: ["Honda S2000 \uD83D\uDE97", "Nissan R34 \uD83C\uDFCE\uFE0F", "Porsche 911 \uD83C\uDFC1", "Toyota Supra \uD83D\uDD25", "Other \uD83D\uDC40"], bg: "#eef2ff", color: "#4338ca", inspo: "photo21.png" },
       { icon: "\uD83D\uDCF8", name: "Photo booth", teaser: "I'm prob gonna get mogged \uD83D\uDE2D", hype: "", subTitle: "What's the one pic you definitely want?", subType: "vote", subOpts: ["The cute one \uD83E\uDD70", "The silly one \uD83D\uDE02", "The candid laugh", "The cool serious one", "All of the above"], bg: "#fff0f6", color: "#d4537e", inspo: "photo22.png" },
       { icon: "\uD83D\uDECD\uFE0F", name: "Thrifting", teaser: "Tuffest fits we're gonna construct \uD83D\uDD25", hype: "Find something fire \uD83D\uDD25", subTitle: "What vibe are we going for?", subType: "vote", subOpts: ["Y2K / retro fits", "Cozy & oversized", "Streetwear finds", "Whatever catches our eye"], bg: "#f0fdf4", color: "#16a34a", inspo: "photo23.png" },
-      { icon: "\uD83C\uDF53", name: "Hwachae", teaser: "EATING HWACHAE WITH MY COUSIN.... \uD83C\uDF53", hype: "", subTitle: "What fruits do you want in it?", subType: "multi", subOpts: ["Strawberry \uD83C\uDF53", "Blueberry 🫐", "Watermelon \uD83C\uDF49", "Pineapple \uD83C\uDF4D", "I don't care", "Other"], bg: "#fef9ec", color: "#b45309", inspo: "photo24.png" },
+      { icon: "\uD83C\uDF53", name: "Hwachae", teaser: "EATING HWACHAE WITH MY COUSIN....", hype: "", subTitle: "What fruits do you want in it?", subType: "multi", subOpts: ["Strawberry \uD83C\uDF53", "Blueberry 🫐", "Watermelon \uD83C\uDF49", "Pineapple \uD83C\uDF4D", "I don't care", "Other"], bg: "#fef9ec", color: "#b45309", inspo: "photo24.png" },
       { icon: "\uD83D\uDE97", name: "Car rotting", teaser: "Lowkey the best part \uD83D\uDE97", hype: "", subTitle: "What are we doing in the car?", subType: "vote", subOpts: ["Listen to our playlist \uD83C\uDFB5", "\uD83D\uDE18", "Yap", "All of the above"], bg: "#fff8e6", color: "#92400e", inspo: null },
-      { icon: "\uD83D\uDEB6", name: "Walk", teaser: "Walking for no reason \uD83D\uDEB6", hype: "Fresh air hits different \uD83C\uDF3F", subTitle: "Where are we walking?", subType: "vote", subOpts: ["Walk around a park \uD83C\uDF33", "Walk in the city \uD83C\uDFD9\uFE0F", "Walk around a random neighbourhood \uD83C\uDFD8\uFE0F", "No more walking \uD83D\uDE2D", "Other"], bg: "#f0fdf4", color: "#15803d", inspo: "photo25.png" },
+      { icon: "\uD83D\uDEB6", name: "Walk", teaser: "Walking for no reason \uD83D\uDEB6", hype: "Try not to yap challenge level IMPOSSIBLE \uD83C\uDF3F", subTitle: "Where are we walking?", subType: "vote", subOpts: ["Walk around a park \uD83C\uDF33", "Walk in the city \uD83C\uDFD9\uFE0F", "Walk around a random neighbourhood \uD83C\uDFD8\uFE0F", "No more walking \uD83D\uDE2D", "Other"], bg: "#f0fdf4", color: "#15803d", inspo: "photo25.png" },
     ];
 
     const FOOD_OPTS = [
@@ -108,8 +108,8 @@
       return (
         <Wrap>
           <div style={{ width: "100%", textAlign: "center" }}>
-          <div style={{ fontSize: 42, marginBottom: "1rem" }}>🤭</div>
-          <h1 style={{ fontSize: 24, fontWeight: 600, color: textMain, textAlign: "center", lineHeight: 1.4, marginBottom: "0.75rem" }}>Lowkey wanna impress you so I made you a website 🤭</h1>
+          <div style={{ fontSize: 42, marginBottom: "1rem" }}>😏</div>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: textMain, textAlign: "center", lineHeight: 1.4, marginBottom: "0.75rem" }}>Lowkey wanna impress you so I made you a website 🤓</h1>
           <p style={{ fontSize: 17, color: textMuted, textAlign: "center", marginBottom: "1.25rem" }}>Will you go on a 2nd date with me? 🥺</p>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
             <button onClick={onYes} style={{ background: pink, color: "#fff", border: "none", borderRadius: 14, padding: "0.75rem 2rem", fontSize: Math.round(16 * yesFactor), fontWeight: 600, cursor: "pointer", transform: "scale(" + yesFactor + ")", transformOrigin: "center", transition: "transform 0.25s ease" }}>
@@ -362,7 +362,7 @@
             <h2 style={{ fontSize: 24, fontWeight: 600, color: textMain, marginBottom: "0.4rem" }}>Is there anything you want to add to the date?</h2>
             <p style={{ fontSize: 15, color: textMuted, marginBottom: "1.5rem" }}>Or just leave a note 😘</p>
             {sent ? (
-              <div style={{ textAlign: "center", padding: "1.5rem 0", fontSize: 15, color: pink, fontWeight: 500 }}>Aww, he'll love reading this 🥹</div>
+              <div style={{ textAlign: "center", padding: "1.5rem 0", fontSize: 15, color: pink, fontWeight: 500 }}>Let's pray its a good note or idea 🥹</div>
             ) : (
               <div>
                 <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Anything goes..." style={{ width: "100%", minHeight: 120, resize: "vertical", fontSize: 15, border: "1px solid " + pinkBorder, borderRadius: 12, padding: "0.85rem", background: pinkLight, color: textMain, display: "block", marginBottom: "1rem", outline: "none" }} />
@@ -456,7 +456,7 @@
 
           <div style={{ textAlign: "center", marginTop: "0.5rem", marginBottom: "1.25rem" }}>
             <div style={{ fontSize: 12, color: "#c2607e", background: "#fff0f6", borderRadius: 999, padding: "6px 16px", display: "inline-block", border: "1px solid #f0d0dc" }}>
-              📸 Screenshot this before continuing!
+              📸 SCREENSHOT IT (IF YOU WANT)!
             </div>
           </div>
 
@@ -474,7 +474,7 @@
             <div style={{ fontSize: 52, marginBottom: "0.5rem" }}>🎀</div>
             <h1 style={{ fontSize: 26, fontWeight: 600, color: textMain, textAlign: "center", lineHeight: 1.4, marginBottom: "0.4rem" }}>WOW GOOD JOB Jamella</h1>
             <p style={{ fontSize: 16, color: textMuted, textAlign: "center", marginBottom: "0.25rem" }}>July 4th is gonna be so fun.</p>
-            <p style={{ fontSize: 15, color: pink, textAlign: "center", marginBottom: "1.5rem" }}>He's already taking notes 📝💕</p>
+            <p style={{ fontSize: 15, color: pink, textAlign: "center", marginBottom: "1.5rem" }}>I'm already taking notes 📝💕</p>
 
           </div>
         </Wrap>
